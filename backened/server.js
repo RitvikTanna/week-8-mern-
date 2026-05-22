@@ -1,10 +1,14 @@
-//create Http Server
+// ---------------- IMPORTS ----------------
 
 import express from "express";
 import mongoose from "mongoose";
 import { config } from "dotenv";
-import { UserApp } from "./apis/Userapi.js";
 import cors from "cors";
+
+import { UserApp } from "./apis/Userapi.js";
+
+
+// ---------------- CONFIG ----------------
 
 config();
 
@@ -15,17 +19,22 @@ const app = express();
 
 async function connectDB() {
 
-    // Prevent multiple connections in Vercel serverless
-    if (mongoose.connection.readyState >= 1) return;
+    // Skip only if already connected
+    if (mongoose.connection.readyState === 1) {
+        return;
+    }
 
     try {
 
+        console.log("Connecting to MongoDB...");
         console.log("DB_URL =", process.env.DB_URL);
 
         await mongoose.connect(process.env.DB_URL, {
+
             serverSelectionTimeoutMS: 15000,
             socketTimeoutMS: 45000,
             bufferCommands: false,
+
         });
 
         console.log("Success: Connected to MongoDB Atlas");
@@ -44,17 +53,23 @@ async function connectDB() {
 
 // ---------------- MIDDLEWARE ----------------
 
-// Connect DB before every request
+// Ensure DB connection before every request
 app.use(async (req, res, next) => {
 
     try {
 
         await connectDB();
+
         next();
 
     } catch (err) {
 
-        console.error("Path:", req.path, "Error:", err.message);
+        console.error(
+            "Path:",
+            req.path,
+            "Error:",
+            err.message
+        );
 
         res.status(503).json({
             message: "Database connection failed",
@@ -63,7 +78,12 @@ app.use(async (req, res, next) => {
     }
 });
 
+
+// Parse JSON
 app.use(express.json());
+
+
+// ---------------- CORS ----------------
 
 app.use(
     cors({
@@ -111,6 +131,7 @@ app.use((err, req, res, next) => {
 
     console.error(err);
 
+    // Validation error
     if (err.name === "ValidationError") {
 
         return res.status(400).json({
@@ -119,6 +140,7 @@ app.use((err, req, res, next) => {
         });
     }
 
+    // Invalid MongoDB ObjectId
     if (err.name === "CastError") {
 
         return res.status(400).json({
@@ -126,6 +148,7 @@ app.use((err, req, res, next) => {
         });
     }
 
+    // Duplicate key error
     if (err.code === 11000) {
 
         return res.status(409).json({
@@ -133,12 +156,26 @@ app.use((err, req, res, next) => {
         });
     }
 
+    // Default server error
     res.status(500).json({
         message: err.message || "Internal Server Error"
     });
 });
 
 
-// ---------------- EXPORT APP FOR VERCEL ----------------
+// ---------------- LOCAL DEVELOPMENT ----------------
+
+const PORT = process.env.PORT || 4000;
+
+if (process.env.NODE_ENV !== "production") {
+
+    app.listen(PORT, () => {
+
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+
+// ---------------- EXPORT FOR VERCEL ----------------
 
 export default app;
