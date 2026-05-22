@@ -1,16 +1,47 @@
-# React + Vite
+# Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This folder contains the **frontend** of the MERN stack application. It is built with **React 19**, **Vite**, **Tailwind CSS**, and **React Router v6**.
 
-Currently, two official plugins are available:
+## Features
+- Modern UI with Tailwind CSS v4 (via `@tailwindcss/vite`).
+- Context API (`UserContext`) to manage state and interact with the backend API.
+- CRUD interface for users (Add, List, Delete).
+- Responsive design using Tailwind utilities.
+- Ready for **Vercel** static‑site deployment.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Prerequisites
+- Node.js 20 (or the version specified in `package.json`).
+- A running backend API (see the `backened` folder) and the environment variable `VITE_BACKEND_URL` pointing to it.
 
-## React Compiler
+## Setup
+```bash
+cd frontened
+npm install
+```
+Create a `.env` file (optional) if you need local environment variables. For development you can rely on the default `VITE_BACKEND_URL` pointing to `http://localhost:4000/user-api`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
+```bash
+npm run dev   # starts Vite dev server at http://localhost:5173
+```
+The app will automatically reload on changes.
 
-## Expanding the ESLint configuration
+## Build
+```bash
+npm run build   # creates the production bundle in the `dist/` folder
+```
+The `dist/` directory contains a fully static site ready for hosting.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Vercel Deployment
+1. In the Vercel dashboard, **Create a new project** and select this repository.
+2. Set the **Root Directory** to `frontened`.
+3. Vercel auto‑detects Vite and will run `npm install && npm run build`.
+4. Add an environment variable:
+   - **Key**: `VITE_BACKEND_URL`
+   - **Value**: `https://<your-backend-project>.vercel.app/user-api`
+5. Deploy – Vercel will serve the built static assets from `dist/`.
+
+## Notes
+- The frontend expects the backend API to be reachable at the URL defined in `VITE_BACKEND_URL`.
+- If you change the API URL locally, update the `.env` file or the Vite env variable accordingly.
+- Tailwind CSS v4 is configured via `@tailwindcss/vite`; no additional PostCSS config is required.
