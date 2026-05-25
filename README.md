@@ -2,7 +2,7 @@
 
 A full-stack MERN (MongoDB, Express.js, React.js, Node.js) application developed as part of Week 8 learning assignments. This project demonstrates frontend-backend integration, API handling, authentication flow, and database operations.
 
-## 🚀 Features
+##  Features
 
 - User Authentication
 - Login System
@@ -18,7 +18,7 @@ A full-stack MERN (MongoDB, Express.js, React.js, Node.js) application developed
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - React.js
@@ -40,7 +40,7 @@ A full-stack MERN (MongoDB, Express.js, React.js, Node.js) application developed
 
 ---
 
-## 📂 Folder Structure
+##  Folder Structure
 
 ```bash
 week-8-mern/
@@ -63,7 +63,7 @@ week-8-mern/
 
 ---
 
-## ⚙️ Installation
+##  Installation
 
 Clone repository
 
@@ -99,7 +99,7 @@ npm run dev
 
 ---
 
-## 🔐 Environment Variables
+##  Environment Variables
 
 Backend `.env`
 
@@ -147,7 +147,7 @@ PUT /common-api/change-password
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 Add project screenshots here.
 
@@ -163,7 +163,7 @@ Add project screenshots here.
 
 ---
 
-## 👨‍💻 Author
+##  Author
 
 Ritvik Tanna
 
@@ -171,6 +171,6 @@ Engineering Student | MERN Developer | AI Enthusiast
 
 ---
 
-## 📜 License
+## License
 
 This project is developed for educational purposes.
