@@ -21,7 +21,8 @@ app.use(
     cors({
         origin: [
             "http://localhost:5173",
-            "https://week-8-mern-ix83.vercel.app"
+            "https://week-8-mern-ix83.vercel.app",
+            "https://week-8-mern-ix83-rgirmv8kr-ritviktannas-projects.vercel.app"
         ],
         methods: [
             "GET",
