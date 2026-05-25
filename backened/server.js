@@ -15,167 +15,220 @@ config();
 const app = express();
 
 
-// ---------------- DATABASE CONNECTION ----------------
+// ---------------- CORS ----------------
+
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "https://week-8-mern-ix83.vercel.app"
+        ],
+        methods: [
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH"
+        ],
+        credentials: true
+    })
+);
+
+
+// ---------------- JSON PARSER ----------------
+
+app.use(express.json());
+
+
+// ---------------- DATABASE ----------------
 
 async function connectDB() {
 
-    // Skip only if already connected
+    // Prevent reconnecting repeatedly
     if (mongoose.connection.readyState === 1) {
         return;
     }
 
     try {
 
-        console.log("Connecting to MongoDB...");
-        console.log("MONGO_URI =", process.env.MONGO_URI);
+        console.log(
+            "Mongo URI:",
+            process.env.MONGO_URI
+                ? "Loaded Successfully"
+                : "Undefined"
+        );
 
-        await mongoose.connect(process.env.MONGO_URI, {
+        console.log("Connecting MongoDB...");
 
-            serverSelectionTimeoutMS: 15000,
-            socketTimeoutMS: 45000,
-            bufferCommands: false,
+        await mongoose.connect(
+            process.env.MONGO_URI,
+            {
+                serverSelectionTimeoutMS: 15000,
+                socketTimeoutMS: 45000,
+                bufferCommands: false
+            }
+        );
 
-        });
-
-        console.log("Success: Connected to MongoDB Atlas");
+        console.log(
+            "MongoDB Connected Successfully"
+        );
 
     } catch (err) {
 
-        console.error(
-            "Critical: MongoDB connection failed:",
+        console.log(
+            "MongoDB Error:",
             err.message
         );
 
         throw err;
     }
+
 }
 
 
-// ---------------- MIDDLEWARE ----------------
-
-// Ensure DB connection before every request
-app.use(async (req, res, next) => {
-
-    try {
-
-        await connectDB();
-
-        next();
-
-    } catch (err) {
-
-        console.error(
-            "Path:",
-            req.path,
-            "Error:",
-            err.message
-        );
-
-        res.status(503).json({
-            message: "Database connection failed",
-            error: err.message
-        });
-    }
-});
-
-
-// Parse JSON
-app.use(express.json());
-
-
-// ---------------- CORS ----------------
+// ---------------- ENSURE DB ----------------
 
 app.use(
-    cors({
-        origin:
-            process.env.NODE_ENV === "production"
-                ? (
-                    process.env.FRONTEND_URL
-                        ? [process.env.FRONTEND_URL]
-                        : true
-                )
-                : true,
+    async (req, res, next) => {
 
-        credentials: true
-    })
+        try {
+
+            await connectDB();
+
+            next();
+
+        } catch (err) {
+
+            res.status(503).json({
+                message:
+                    "Database connection failed",
+                error:
+                    err.message
+            });
+
+        }
+
+    }
 );
 
 
 // ---------------- HEALTH CHECK ----------------
 
-app.get("/", (req, res) => {
+app.get(
+    "/",
+    (req, res) => {
 
-    const statusLabels = [
-        "Disconnected",
-        "Connected",
-        "Connecting",
-        "Disconnecting"
-    ];
+        const labels = [
+            "Disconnected",
+            "Connected",
+            "Connecting",
+            "Disconnecting"
+        ];
 
-    res.json({
-        message: "Backend is running",
-        database:
-            statusLabels[mongoose.connection.readyState] || "Unknown"
-    });
-});
+        res.json({
+            message:
+                "Backend is running",
+            database:
+                labels[
+                mongoose.connection.readyState
+                ]
+        });
+
+    }
+);
 
 
 // ---------------- ROUTES ----------------
 
-app.use("/user-api", UserApp);
+app.use(
+    "/user-api",
+    UserApp
+);
 
 
 // ---------------- ERROR HANDLER ----------------
 
-app.use((err, req, res, next) => {
+app.use(
+    (
+        err,
+        req,
+        res,
+        next
+    ) => {
 
-    console.error(err);
+        console.log(err);
 
-    // Validation error
-    if (err.name === "ValidationError") {
+        if (
+            err.name ===
+            "ValidationError"
+        ) {
 
-        return res.status(400).json({
-            message: "Validation failed",
-            errors: err.errors
+            return res.status(400).json({
+                message:
+                    "Validation failed",
+                errors:
+                    err.errors
+            });
+
+        }
+
+        if (
+            err.code === 11000
+        ) {
+
+            return res.status(409).json({
+                message:
+                    "Duplicate value exists"
+            });
+
+        }
+
+        if (
+            err.name ===
+            "CastError"
+        ) {
+
+            return res.status(400).json({
+                message:
+                    "Invalid ID"
+            });
+
+        }
+
+        res.status(500).json({
+            message:
+                err.message
         });
+
     }
-
-    // Invalid MongoDB ObjectId
-    if (err.name === "CastError") {
-
-        return res.status(400).json({
-            message: "Invalid ID format"
-        });
-    }
-
-    // Duplicate key error
-    if (err.code === 11000) {
-
-        return res.status(409).json({
-            message: "Duplicate field value"
-        });
-    }
-
-    // Default server error
-    res.status(500).json({
-        message: err.message || "Internal Server Error"
-    });
-});
+);
 
 
-// ---------------- LOCAL DEVELOPMENT ----------------
+// ---------------- LOCAL DEV ----------------
 
-const PORT = process.env.PORT || 4000;
+const PORT =
+    process.env.PORT ||
+    4000;
 
-if (process.env.NODE_ENV !== "production") {
+if (
+    process.env.NODE_ENV !==
+    "production"
+) {
 
-    app.listen(PORT, () => {
+    app.listen(
+        PORT,
+        () => {
 
-        console.log(`Server running on port ${PORT}`);
-    });
+            console.log(
+                `Server running on ${PORT}`
+            );
+
+        }
+    );
+
 }
 
 
-// ---------------- EXPORT FOR VERCEL ----------------
+// ---------------- EXPORT ----------------
 
 export default app;
