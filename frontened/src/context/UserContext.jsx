@@ -5,7 +5,8 @@ import axios from "axios";
 const UserContext = createContext();
 
 // Base API URL - point to express server running on port 4000
-const API_BASE_URL = "http://localhost:4000/user-api";
+const API_BASE_URL =
+  "https://week-8-mern-mcit.vercel.app/user-api";
 
 export function UserProvider({ children }) {
   const [users, setUsers] = useState([]);
