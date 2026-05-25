@@ -1,72 +1,222 @@
-//Create mini-express app
+// Create mini express app
 import express from "express";
 import UserModel from "../models/UserModel.js";
+
 export const UserApp = express.Router();
 
-//User APi ROutes
 
-
-//create User
+// CREATE USER
 UserApp.post("/users", async (req, res) => {
     try {
-        const newUser = req.body;
-        const newUserDocument = new UserModel(newUser);
+
+        console.log("Received Data:", req.body);
+
+        const newUserDocument = new UserModel(req.body);
+
         await newUserDocument.save();
-        res.status(201).json({ message: "User created successfully", payload: newUserDocument });
+
+        console.log("User Saved:", newUserDocument);
+
+        res.status(201).json({
+            message: "User created successfully",
+            payload: newUserDocument
+        });
+
     } catch (err) {
-        res.status(400).json({ message: err.message || "Error creating user" });
+
+        console.log("CREATE USER ERROR:", err);
+
+        res.status(400).json({
+            success: false,
+            message: err.message || "Error creating user"
+        });
+
     }
-})
-//Read all users
+});
+
+
+// READ ALL USERS
 UserApp.get("/users", async (req, res) => {
     try {
-        let usersList = await UserModel.find({ status: true });
-        res.status(200).json({ message: "users", payload: usersList });
+
+        const usersList = await UserModel.find({
+            status: true
+        });
+
+        res.status(200).json({
+            message: "users",
+            payload: usersList
+        });
+
     } catch (err) {
-        res.status(500).json({ message: err.message || "Error fetching users" });
+
+        console.log("FETCH USERS ERROR:", err);
+
+        res.status(500).json({
+            message: err.message || "Error fetching users"
+        });
+
     }
-})
-//Read user by id
+});
+
+
+// READ USER BY ID
 UserApp.get("/users/:id", async (req, res) => {
-    let userId = req.params.id;
-    let user = await UserModel.findOne({ _id: userId, status: true });
-    res.status(200).json({ message: "user found", payload: user });
-})
-//Update user by id
+
+    try {
+
+        const userId = req.params.id;
+
+        const user = await UserModel.findOne({
+            _id: userId,
+            status: true
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "User found",
+            payload: user
+        });
+
+    } catch (err) {
+
+        console.log("GET USER ERROR:", err);
+
+        res.status(400).json({
+            message: err.message
+        });
+
+    }
+
+});
+
+
+// UPDATE USER
 UserApp.put("/users/:id", async (req, res) => {
+
     try {
-        let id = req.params.id;
-        let user = await UserModel.findByIdAndUpdate(id, req.body, { new: true });
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.status(200).json({ message: "user updated", payload: user });
+
+        const id = req.params.id;
+
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            id,
+            req.body,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedUser) {
+
+            return res.status(404).json({
+                message: "User not found"
+            });
+
+        }
+
+        res.status(200).json({
+            message: "User updated successfully",
+            payload: updatedUser
+        });
+
     } catch (err) {
-        res.status(400).json({ message: err.message || "Error updating user" });
+
+        console.log("UPDATE USER ERROR:", err);
+
+        res.status(400).json({
+            message: err.message
+        });
+
     }
-})
-//Delete user by id (soft delete - set status to false)
+
+});
+
+
+// SOFT DELETE USER
 UserApp.delete("/users/:id", async (req, res) => {
+
     try {
-        let id = req.params.id;
-        let user = await UserModel.findByIdAndUpdate(id, { status: false }, { new: true });
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.status(200).json({ message: "user deleted", payload: user });
+
+        const id = req.params.id;
+
+        const deletedUser = await UserModel.findByIdAndUpdate(
+            id,
+            {
+                status: false
+            },
+            {
+                new: true
+            }
+        );
+
+        if (!deletedUser) {
+
+            return res.status(404).json({
+                message: "User not found"
+            });
+
+        }
+
+        res.status(200).json({
+            message: "User deleted successfully",
+            payload: deletedUser
+        });
+
     } catch (err) {
-        res.status(400).json({ message: err.message || "Error deleting user" });
+
+        console.log("DELETE USER ERROR:", err);
+
+        res.status(400).json({
+            message: err.message
+        });
+
     }
-})
+
+});
 
 
-
-//Toggle user status (activate/deactivate)
+// TOGGLE STATUS
 UserApp.patch("/users/:id", async (req, res) => {
+
     try {
-        let id = req.params.id;
-        let user = await UserModel.findById(id);
-        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const id = req.params.id;
+
+        const user = await UserModel.findById(id);
+
+        if (!user) {
+
+            return res.status(404).json({
+                message: "User not found"
+            });
+
+        }
+
         user.status = !user.status;
+
         await user.save();
-        res.status(200).json({ message: user.status ? "user activated" : "user deactivated", payload: user });
+
+        res.status(200).json({
+            message: user.status
+                ? "User activated"
+                : "User deactivated",
+            payload: user
+        });
+
     } catch (err) {
-        res.status(400).json({ message: err.message || "Error toggling user status" });
+
+        console.log("PATCH ERROR:", err);
+
+        res.status(400).json({
+            message: err.message
+        });
+
     }
-})
+
+});

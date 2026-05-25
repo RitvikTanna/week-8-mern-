@@ -27,9 +27,9 @@ async function connectDB() {
     try {
 
         console.log("Connecting to MongoDB...");
-        console.log("DB_URL =", process.env.DB_URL);
+        console.log("MONGO_URI =", process.env.MONGO_URI);
 
-        await mongoose.connect(process.env.DB_URL, {
+        await mongoose.connect(process.env.MONGO_URI, {
 
             serverSelectionTimeoutMS: 15000,
             socketTimeoutMS: 45000,
